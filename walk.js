@@ -219,7 +219,7 @@ export function zoneStage(host, { zones = [], onEnter, sfx = () => { }, theme = 
     else if (!locked && leftPad) { if (on !== cur) { cur = on; hold = 0; sfx('click', .35); } hold += dt; ring.style.display = 'flex'; ring.firstChild.style.width = Math.min(100, hold / .9 * 100) + '%';
       if (hold >= .9) { leftPad = false; ring.style.display = 'none'; const i = on; onEnter && onEnter(i, api); } }
     const W = host.clientWidth, H = host.clientHeight;
-    pads.forEach((p, i) => { v.set(p.position.x, pads.length > 4 ? 2.4 : 2.2, p.position.z - (pads.length > 4 ? .7 : 0)).project(cam); const el = labels[i]; if (!el) return; el.style.left = ((v.x + 1) / 2 * W) + 'px'; el.style.top = ((1 - v.y) / 2 * H) + 'px'; el.classList.toggle('hot', i === on); });
+    pads.forEach((p, i) => { v.set(p.position.x, pads.length > 4 ? 2.0 : 1.5, p.position.z - (pads.length > 4 ? .7 : .3)).project(cam); const el = labels[i]; if (!el) return; el.style.left = ((v.x + 1) / 2 * W) + 'px'; el.style.top = ((1 - v.y) / 2 * H) + 'px'; el.classList.toggle('hot', i === on); });
     const many = pads.length > 4; follow(cam, new THREE.Vector3(many ? me.position.x * .8 : me.position.x, 0, me.position.z), many ? new THREE.Vector3(0, 13, 13) : new THREE.Vector3(0, 9.5, 10.5), many ? new THREE.Vector3(0, .3, -3.2) : new THREE.Vector3(0, .5, -2.2), .07); sunFollow(sun, me.position);
   });
   const api = {
