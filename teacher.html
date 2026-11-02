@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>선생님 화면 · 긴급 출동! 생태계 구조대</title>
+<link rel="icon" href="img/mascot.webp">
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .wrap{max-width:1180px;margin:0 auto;padding:24px}
+  .hero{display:grid;grid-template-columns:1.2fr 1fr;gap:26px;align-items:center}
+  @media (max-width:860px){.hero{grid-template-columns:1fr}}
+  .qr{background:#fff;border-radius:30px;padding:22px;text-align:center;box-shadow:0 10px 0 rgba(120,90,60,.18)}
+  .qr img{width:100%;max-width:380px;display:block;margin:0 auto}
+  .url{font-family:'Jua';font-size:clamp(20px,2.6vw,30px);word-break:break-all;color:#27978a;margin-top:10px}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+  @media (max-width:860px){.flow{grid-template-columns:1fr 1fr}}
+  .flow .step{font-size:16px}
+  .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+  .links a{text-decoration:none}
+  table{width:100%;border-collapse:collapse;font-size:16px;background:#fff;border-radius:18px;overflow:hidden}
+  td,th{padding:10px 12px;border-bottom:1px solid #efe3c2;text-align:left;vertical-align:top}
+  th{background:#fff3c4;font-family:'Jua';font-weight:400}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <div class="sign" style="text-align:left"><div class="sub">과학 4-2 · 2. 생물과 환경 · 8차시</div><h1>긴급 출동!<br><span>생태계 구조대</span></h1><div class="sub">생태계 보전을 위해서 어떻게 해야 할까?</div></div>
+      <div class="card" style="margin-top:60px">
+        <div class="title-tag">학생 입장 방법</div>
+        <p class="big">태블릿 카메라로 QR을 찍거나, 주소창에 아래 주소를 입력해요.<br>번호와 이름을 쓰고 <b>모험 시작</b>! 이어폰을 쓰면 더 좋아요.</p>
+      </div>
+    </div>
+    <div class="qr"><img id="qr" alt="QR 코드"><div class="url" id="url"></div></div>
+  </div>
+
+  <div class="flow">
+    <div class="step"><b>1. 개인 미션 (약 30분)</b>바다의 SOS → 생태계 지킴이 도감 → 비밀 금고. 진행 상황은 기기에 자동 저장돼요.</div>
+    <div class="step"><b>2. 임명장 (약 3분)</b>게임 끝에 임명장이 나와요. 저장한 뒤 상태창 제출 미션에 올려요.</div>
+    <div class="step"><b>3. 상태창 인증</b>제출 미션 "생태계 구조대 임명장 인증하기" (보상 경험치 200 · 골드 200 · 지력+1 · 성실성+1)</div>
+    <div class="step"><b>4. 블루킷 대결 (마무리)</b>모두 끝나면 아래 버튼으로 블루킷을 열고 Host → 게임 모드 선택 → 코드를 띄워요.</div>
+  </div>
+
+  <div class="links">
+    <a class="btn sun" href="./" target="_blank">학생 게임 열기</a>
+    <a class="btn coral" href="https://dashboard.blooket.com/set/6ae7e2ef3340e034e8b9146b" target="_blank">블루킷 대결 열기 (18문항)</a>
+    <a class="btn" href="https://statyou.kr/ko/classes/29db861d-0631-4c8f-b651-cbf28573e478/submission-missions" target="_blank">상태창 제출 확인</a>
+    <a class="btn ghost" href="https://statyou.kr/ko/student-login" target="_blank">학생 상태창 로그인 주소</a>
+  </div>
+
+  <div class="card" style="margin-top:30px">
+    <div class="title-tag gold">정답 한눈에 (교사용)</div>
+    <table>
+      <tr><th>장면</th><th>정답</th><th>핵심</th></tr>
+      <tr><td>SOS 신호</td><td>버려진 그물·낚싯줄, 쓰레기</td><td>2026.8.27 제주 중문 바다거북 방류(해수부). 바다거북 7종 모두 멸종위기종</td></tr>
+      <tr><td>꼬북이가 헷갈려</td><td>해파리처럼 보여서</td><td>삼킨 플라스틱은 소화되지 않고 쌓임</td></tr>
+      <tr><td>먹이 찾기 1·2라운드</td><td>(게임)</td><td>내가 고른 실천 3가지만큼 2라운드 비닐봉지가 줄어듦 → 실천의 효과 체감</td></tr>
+      <tr><td>숫자 탐정</td><td>28마리 (34마리 중)</td><td>1,280조각, 평균 38조각 · 실험관찰 ①</td></tr>
+      <tr><td>얽힘 1위</td><td>낚싯줄·낚싯바늘 (65.2%)</td><td>마스크 끈은 잘라서 버리기</td></tr>
+      <tr><td>빨대의 여행</td><td>버림→하수구→강→바다→부서짐→물고기</td><td>결국 사람에게 돌아옴</td></tr>
+      <tr><td>실천 3가지</td><td>(선택)</td><td>실험관찰 ②</td></tr>
+      <tr><td>실천의 힘</td><td>처음부터 받지 않기</td><td>줄이기 > 다시 쓰기 > 분리배출 · 일회용 컵 1개(20g) → 가정 폐플라스틱 10%</td></tr>
+      <tr><td>연결 고리</td><td>해파리가 많아짐 / 빈칸: 플라스틱, 생태계</td><td>실험관찰 ③</td></tr>
+      <tr><td>산양</td><td>철망 울타리</td><td>2023 겨울 785마리 → 다음 겨울 31마리 → 2025.11 철거 시작</td></tr>
+      <tr><td>생태통로</td><td>약 10만 마리 (98,652)</td><td>5년 지난 곳 로드킬 18%↓, 오대산 87.3%↓, 2025 로드킬 119,862건</td></tr>
+      <tr><td>짝 맞추기</td><td>물고기 길-둑, 스티커-새, 보호구역-서식지, 금지 기간-산란</td><td>교과서 53쪽 사진</td></tr>
+      <tr><td>분류 게임</td><td>국가·사회: 생태통로, 보호 구역, 잡지 않는 기간, 국제 협약 / 나머지는 개인</td><td>실험관찰 "조사해요"</td></tr>
+      <tr><td>OX</td><td>O · X · O · X · O</td><td>틀린 문제는 마지막에 다시 나옴</td></tr>
+      <tr><td>비밀 금고</td><td>생 → 태 → 계</td><td>한눈에 쏙 1번: 일회용품을 줄이면 (생태계)를 보전하는 데 도움</td></tr>
+    </table>
+    <p class="hint">다시 처음부터 하게 하려면 학생 주소 뒤에 <b>?reset</b>을 붙여 열어요.</p>
+  </div>
+</div>
+<script>
+  const gameUrl = new URL('./', location.href).href;
+  document.getElementById('url').textContent = gameUrl.replace(/^https?:\/\//, '');
+  document.getElementById('qr').src = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&margin=10&data=' + encodeURIComponent(gameUrl);
+</script>
+</body>
+</html>
