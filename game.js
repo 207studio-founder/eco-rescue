@@ -32,7 +32,7 @@ let toastT; function toast(t) { const e = $('#toast'); e.textContent = t; e.clas
 /* ---------------- audio (Web Audio: works on iPad/Chromebook/PC) ---------------- */
 let AC = null, master = null, bgGain = null;
 const BUF = {}, LOADING = {};
-const ALL_AUDIO = ['click', 'correct', 'wrong', 'key', 'whoosh', 'munch', 'ouch', 'clear', 'unlock', 'beep', 'sos', 'stamp', 'splash', 'combo', 'bgm_ocean', 'bgm_forest', 'bgm_vault', 'bgm_win', 'v_intro', 'v_m1', 'v_jelly', 'v_game1', 'v_game2', 'v_m2', 'v_m3', 'v_bye'];
+const ALL_AUDIO = ['click', 'correct', 'wrong', 'key', 'whoosh', 'munch', 'ouch', 'clear', 'unlock', 'beep', 'sos', 'stamp', 'splash', 'combo', 'place', 'pickup', 'build_done', 'hop', 'bgm_ocean', 'bgm_forest', 'bgm_vault', 'bgm_win', 'v_intro', 'v_m1', 'v_jelly', 'v_game1', 'v_game2', 'v_m2', 'v_m3', 'v_bye'];
 function ctx() {
   if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.connect(AC.destination); bgGain = AC.createGain(); bgGain.gain.value = 0; bgGain.connect(master); }
   if (AC.state === 'suspended') AC.resume();
@@ -293,7 +293,7 @@ async function title() {
       ${has ? `<button class="btn ghost" id="restart">처음부터 다시</button>` : ''}
       <p class="hint">이어폰을 끼면 더 재밌어요. 소리는 오른쪽 위 스피커 버튼으로 끄고 켤 수 있어요.</p>
     </div></div></div>`);
-  ocean3D($('#ocean3d', d));
+  import('./voxel.js').then(M => M.titleScene($('#ocean3d', d))).catch(e => console.warn(e));
   return new Promise(res => {
     const go = restart => {
       const nm = $('#inName', d).value.trim(); const nu = $('#inNum', d).value.trim();
@@ -353,19 +353,18 @@ async function mission1() {
     explain: `<div class="turtles">${Array.from({ length: 10 }, (_, i) => `<img src="img/turtle.webp" class="${i < 8 ? '' : 'ok'}">`).join('')}</div>
       <p class="big"><span class="hl">34마리 중 28마리</span>, 10마리 중 약 8마리예요! 모두 <b>1,280조각</b>, 한 마리당 평균 <b>38조각</b>의 플라스틱을 삼켰어요.</p><div class="src">출처: 한국해양과학기술원 부검 조사(2022) – 경향신문(2025.9.10), WWF 한국본부(2025.5.22)</div>` });
   await write({ tag: '실험관찰 ①', q: '바다거북을 보호하려면 어떤 노력이 필요할까요? 한 줄로 써 봐요.', key: 'n1', ex: ['플라스틱 사용 줄이기', '바다에 쓰레기 버리지 않기', '비닐봉지 대신 장바구니 쓰기'] });
-  await quiz({ tag: '이 새는 왜 힘들까?', img: 'img/bird.webp', q: '갈매기 발에 <span class="hl">마스크 끈</span>이 묶였어요. 우리나라 바다에서 동물 <b>428마리</b>가 쓰레기에 몸이 얽혀 다치거나 죽었대요.<br><b>가장 많이 얽힌 쓰레기는?</b>',
-    opts: ['마스크 끈', '낚싯줄과 낚싯바늘', '풍선 끈'], ans: 1, hint: '바다에서 물고기를 잡을 때 쓰는 물건이에요. 가늘고 투명해서 잘 안 보여요.',
-    explain: `<div class="grid g3"><div class="stat"><b>65.2%</b><span>낚싯줄·낚싯바늘</span></div><div class="stat"><b style="color:#f0b23c">33.2%</b><span>그물·밧줄·통발</span></div><div class="stat"><b style="color:#7d6a58">1.6%</b><span>마스크 끈·비닐 등</span></div></div>
-      <p class="big">마스크는 <b>끈을 잘라서</b> 버리고, 바닷가에서 쓴 낚싯줄과 쓰레기는 꼭 되가져와요!</p><div class="src">출처: 한국해양과학기술원 연구(2003~2023, 77종) – 경향신문(2025.3.11)</div>` });
+  await beach();
+  await recycle();
   await straw();
-  await actions();
+  await cafe();
+  await write({ tag: '실험관찰 ②', q: '바다거북을 살리기 위해 내가 할 수 있는 일을 써 봐요. (카페에서 한 실천도 좋아요!)', key: 'n2', ex: (S.choices.length ? S.choices : ['빨대 안 받기', '텀블러 쓰기', '장바구니 쓰기']).slice(0, 3).map(x => x === '텀블러' ? '텀블러 쓰기' : x === '머그잔' ? '매장에서는 머그잔 쓰기' : x), note: '실험관찰 27쪽 ②번에도 옮겨 써요' });
   await talk(['와, 네가 고른 실천 덕분에 바다 쓰레기가 확 줄었어!', '다시 한 번 해 보자!'], { v: 'v_game2' });
-  const rate = Math.max(.12, .55 - .13 * S.choices.length);
+  const rate = Math.max(.1, .55 - .09 * S.choices.length);
   const r2 = await arcade({ secs: 25, bagRate: rate, label: '꼬북이 먹이 찾기 · 2라운드 (실천 후)' });
   S.r2 = r2; save(); addLeaves(Math.min(40, r2.jelly * 2));
   await info({ tag: '1라운드 vs 2라운드', tc: 'forest', title: '우리의 실천이 바다를 바꿔요!',
     html: `<div class="grid g2"><div class="stat"><span>1라운드 (실천 전)</span><b>비닐봉지 ${S.r1.bag}개</b><span>해파리 ${S.r1.jelly}개</span></div><div class="stat"><span>2라운드 (실천 후)</span><b style="color:#4f9b52">비닐봉지 ${r2.bag}개</b><span>해파리 ${r2.jelly}개</span></div></div>
-      <p class="big">내가 고른 실천: <b>${S.choices.join(', ')}</b></p><p class="big">바다로 가는 플라스틱이 줄면 바다거북이 플라스틱을 덜 삼키게 돼요.</p>` });
+      <p class="big">카페에서 거절한 일회용품: <b>${S.choices.length ? S.choices.join(', ') : '없음'}</b></p><p class="big">바다로 가는 플라스틱이 줄면 바다거북이 플라스틱을 덜 삼키게 돼요.</p>` });
   await quiz({ tag: '실천에도 힘의 세기가 있다?!', img: 'img/straw.webp', q: '빨대 쓰레기를 줄이는 <span class="hl">가장 힘센 방법</span>은 무엇일까요?',
     opts: ['다 쓴 빨대를 분리배출하기', '빨대를 씻어서 다시 쓰기', '처음부터 빨대를 받지 않기'], ans: 2, hint: '좋은 방법들이지만, 쓰레기가 아예 생기지 않는 방법은?',
     explain: `<div class="opts" style="gap:8px"><div class="opt right"><span class="l">1</span>처음부터 안 쓰기·줄이기 — 쓰레기가 아예 안 생겨요</div><div class="opt"><span class="l">2</span>다시 쓰기 — 쓰레기가 늦게 생겨요</div><div class="opt"><span class="l">3</span>분리배출 — 꼭 해야 하지만, 모두 다시 쓰이지는 않아요</div></div>
@@ -472,32 +471,6 @@ async function mission2() {
   await getKey(1); S.ckpt = 2; save();
 }
 
-let S3D = null;
-async function load3D() { if (S3D !== null) return S3D; try { S3D = await import('./scenes3d.js'); } catch (e) { console.warn(e); S3D = false; } return S3D; }
-async function fence() {
-  const M = await load3D();
-  return new Promise(res => {
-    const d = scene(`<div class="card"><div class="title-tag forest">구조 작전!</div><h2 class="q">울타리를 하나씩 눌러서 산양의 길을 열어 주세요!</h2>
-      <div class="stage3d" style="height:min(56vh,480px)"><div class="badge3d">남은 울타리 <b class="left">3</b></div></div><div class="fb"></div></div>`);
-    const host = $('.stage3d', d);
-    const done = () => { confetti(80, 'leaf'); addLeaves(20); $('.fb', d).innerHTML = `<p class="big" style="text-align:center">길이 열리자 산양이 먹이가 있는 골짜기로 내려갈 수 있게 됐어요!</p><div class="next-row">${btn('다음 ▶')}</div>`; waitClick($('.fb .btn', d)).then(res); };
-    if (M) M.fenceScene(host, { sfx, onCut: n => { $('.left', d).textContent = 3 - n; }, onFree: done });
-    else { host.innerHTML = '<img src="img/goral.webp" style="height:100%;display:block;margin:auto">'; setTimeout(done, 800); }
-  });
-}
-async function bridge() {
-  const M = await load3D();
-  return new Promise(res => {
-    const d = scene(`<div class="card"><div class="title-tag forest">생태통로 짓기</div><h2 class="q">도로 때문에 숲이 둘로 나뉘었어요. 동물 친구들이 건너편 숲으로 가야 하는데 차가 쌩쌩 달려요. 어떻게 도와줄까요?</h2>
-      <div class="stage3d" style="height:min(56vh,480px)"><div class="badge3d msg">고라니가 길을 건너려다 깜짝 놀랐어요!</div></div>
-      <div class="next-row">${btn('생태통로 만들기!', 'sun big')}</div><div class="fb"></div></div>`);
-    const host = $('.stage3d', d), b = $('.next-row .btn', d), msg = $('.msg', d);
-    let api = null;
-    const finish = () => { confetti(100, 'leaf'); addLeaves(20); msg.textContent = '모두 안전하게 건넜어요!'; $('.fb', d).innerHTML = `<p class="big" style="text-align:center"><b>생태통로</b>는 도로 때문에 끊어진 숲과 숲을 이어 주는 <span class="hl3">동물 전용 길</span>이에요!</p><div class="next-row">${btn('다음 ▶')}</div>`; waitClick($('.fb .btn', d)).then(res); };
-    if (M) api = M.bridgeScene(host, { sfx, onBlocked: () => { msg.textContent = '빵빵! 고라니가 길을 건너려다 깜짝 놀랐어요!'; msg.animate([{ transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 300 }); }, onBuilt: () => { msg.textContent = '생태통로 완성! 친구들이 건너가요'; }, onAllCrossed: finish });
-    b.onclick = () => { b.disabled = true; sfx('click'); if (api) api.build(); else finish(); };
-  });
-}
 function matchGame() {
   const L = [['물고기가 다니는 길', 0], ['투명한 벽의 무늬 스티커', 1], ['생태계 보호 구역', 2], ['물고기를 잡지 못하는 기간', 3]];
   const R = shuffle([['둑에 막힌 물고기가 오르내릴 수 있게 해요', 0], ['투명한 벽을 못 보고 부딪히는 새를 지켜요', 1], ['생물이 사는 곳을 통째로 지켜요 (예: 한려해상 국립공원)', 2], ['물고기가 알을 낳고 새끼가 자라는 때를 지켜요', 3]]);
@@ -758,11 +731,15 @@ async function ocean3D(host) {
 }
 
 /* ---------------- main ---------------- */
-(async function main() {
+/* ENTER_NAV: 키보드 Enter/Space로 말풍선·다음 버튼 진행 */
+addEventListener('keydown', e => { if (!['Enter', ' '].includes(e.key)) return; const ae = document.activeElement; if (ae && /INPUT|TEXTAREA/.test(ae.tagName)) return;
+  const tk = document.querySelector('.talk'); if (tk && tk.onclick) { e.preventDefault(); tk.onclick(); return; }
+  const bs = [...document.querySelectorAll('.fb .btn, .next-row .btn')].filter(b => !b.disabled && b.offsetParent); if (bs.length) { e.preventDefault(); bs[bs.length - 1].click(); } });
+addEventListener('DOMContentLoaded', async function main() {
   const qs = new URLSearchParams(location.search);
   if (qs.has('reset')) { localStorage.removeItem(KEY); location.replace(location.pathname); return; }
   addEventListener('pointerdown', () => { ctx(); }, { once: true });
-  const dev = qs.get('scene'); if (dev) { hud(); const F = { bridge, fence, straw, actions, sortGame, hope, matchGame, vault, oxRound, promise, certificate, arcade: () => arcade({ secs: 15 }) }; await F[dev](); return; }
+  const dev = qs.get('scene'); if (dev) { hud(); const F = { bridge, fence, beach, recycle, cafe, linkChain, treaty, title: () => title(), straw, actions, quiz: () => quiz({ tag: '테스트', q: '테스트 질문', opts: ['가', '나', '다'], ans: 1, hint: '힌트', explain: '<p>설명</p>' }), sortGame, hope, matchGame, vault, oxRound, promise, certificate, arcade: () => arcade({ secs: 15 }) }; await F[dev](); return; }
   await title(); hud();
   const jump = qs.get('jump'); if (jump) S.ckpt = +jump;
   if (S.ckpt < 0.5) await prologue();
@@ -771,4 +748,4 @@ async function ocean3D(host) {
   if (S.ckpt < 3) { await islandMap(2); await mission3(); }
   if (S.ckpt < 4) { await promise(); await certificate(); }
   await finale();
-})();
+});
