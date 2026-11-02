@@ -220,5 +220,5 @@ p.big{font-size:clamp(18px,2.4vw,23px);line-height:1.7;margin:6px 0}
 .badge3d b{color:#ff8c7a}
 img.hi{height:26px;vertical-align:middle}
 .bin img{height:90px;display:block;margin:0 auto 6px;filter:drop-shadow(0 5px 0 rgba(0,0,0,.15))}
-.pin .dot img{width:62px;height:62px;object-fit:cover;border-radius:50%}
+.pin .dot img{width:62px;height:62px;object-fit:cover;object-position:50% 12%;border-radius:50%}
 .flip .f{gap:6px}

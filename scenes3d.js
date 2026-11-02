@@ -14,14 +14,14 @@ function sprite(src, h, aspect) {
 }
 function baseRig(host, { bg = 0xbfe9ff, fog = [30, 70] } = {}) {
   const r = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-  r.setPixelRatio(Math.min(2, devicePixelRatio)); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+  r.setPixelRatio(Math.min(1.5, devicePixelRatio)); r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
   r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.05;
   host.appendChild(r.domElement); r.domElement.style.display = 'block'; r.domElement.style.width = '100%'; r.domElement.style.height = '100%';
   const sc = new THREE.Scene(); sc.background = new THREE.Color(bg); sc.fog = new THREE.Fog(bg, fog[0], fog[1]);
   const cam = new THREE.PerspectiveCamera(40, 1, .1, 200);
   sc.add(new THREE.HemisphereLight(0xffffff, 0x9bd38a, 1.15));
   const sun = new THREE.DirectionalLight(0xfff0d0, 1.6); sun.position.set(8, 16, 10); sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22 }); sc.add(sun);
+  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -22, right: 22, top: 22, bottom: -22 }); sc.add(sun);
   const size = () => { const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
   const ro = new ResizeObserver(size); ro.observe(host); size();
   return { r, sc, cam, ro };
@@ -181,7 +181,8 @@ export function fenceScene(host, { onCut, onFree, sfx = () => { } } = {}) {
   r.domElement.addEventListener('pointerdown', onDown);
   const stop = animate((dt, t) => {
     const fp = flakes.geometry.attributes.position; for (let i = 0; i < fp.count; i++) { let y = fp.getY(i) - dt * .8; if (y < -1) y = 12; fp.setY(i, y); fp.setX(i, fp.getX(i) + Math.sin(t + i) * .002); } fp.needsUpdate = true;
-    panels.forEach((p, i) => { const u = p.userData; if (u.cut && u.fall < 1) { u.fall = Math.min(1, u.fall + dt * 1.6); p.rotation.z = -ease(u.fall) * 1.45; p.position.y = hY(fx) - ease(u.fall) * .2; } if (!u.cut) p.children[1].children[0].material.emissive.setRGB(.35 + Math.sin(t * 5) * .25, .12, .05); });
+    panels.forEach((p, i) => { const u = p.userData; if (u.cut && u.fall === 0) p.children[1].children.forEach(c => c.material.emissive && c.material.emissive.setRGB(0, 0, 0));
+      if (u.cut && u.fall < 1) { u.fall = Math.min(1, u.fall + dt * 1.6); p.rotation.z = -ease(u.fall) * 1.45; p.position.y = hY(fx) - ease(u.fall) * .2; } if (!u.cut) p.children[1].children[0].material.emissive.setRGB(.35 + Math.sin(t * 5) * .25, .12, .05); });
     if (free) {
       walkT += dt / 3.2; const k = Math.min(1, walkT); const x = -2.4 + ease(k) * 8.4;
       goral.position.set(x, hY(x) + Math.abs(Math.sin(walkT * 30)) * .15, -.8);

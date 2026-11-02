@@ -29,45 +29,55 @@ function addLeaves(n) {
 }
 let toastT; function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('on'), 1300); }
 
-/* ---------------- audio ---------------- */
-const A = {};
-const aud = n => { if (!A[n]) { A[n] = new Audio('audio/' + n + '.mp3'); A[n].preload = 'auto'; } return A[n]; };
-['click', 'correct', 'wrong', 'key', 'whoosh', 'munch', 'ouch'].forEach(aud);
-function sfx(n, vol = .7) { if (!S.sound) return; try { const a = aud(n).cloneNode(); a.volume = vol; a.play().catch(() => { }); } catch (e) { } }
-let bg = null, bgName = null, bgVol = .26;
-function fade(a, to, ms = 700) { if (!a) return; const from = a.volume, t0 = performance.now(); const step = t => { const k = Math.min(1, (t - t0) / ms); a.volume = Math.max(0, Math.min(1, from + (to - from) * k)); if (k < 1) requestAnimationFrame(step); else if (to === 0) a.pause(); }; requestAnimationFrame(step); }
+/* ---------------- audio (Web Audio: works on iPad/Chromebook/PC) ---------------- */
+let AC = null, master = null, bgGain = null;
+const BUF = {}, LOADING = {};
+const ALL_AUDIO = ['click', 'correct', 'wrong', 'key', 'whoosh', 'munch', 'ouch', 'clear', 'unlock', 'beep', 'sos', 'stamp', 'splash', 'combo', 'bgm_ocean', 'bgm_forest', 'bgm_vault', 'bgm_win', 'v_intro', 'v_m1', 'v_jelly', 'v_game1', 'v_game2', 'v_m2', 'v_m3', 'v_bye'];
+function ctx() {
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.connect(AC.destination); bgGain = AC.createGain(); bgGain.gain.value = 0; bgGain.connect(master); }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function loadBuf(n) {
+  if (BUF[n]) return Promise.resolve(BUF[n]);
+  if (!LOADING[n]) LOADING[n] = fetch('audio/' + n + '.mp3').then(r => r.arrayBuffer()).then(ab => new Promise((ok, no) => ctx().decodeAudioData(ab, ok, no))).then(b => (BUF[n] = b)).catch(() => null);
+  return LOADING[n];
+}
+function preloadAll() { ALL_AUDIO.forEach(loadBuf); }
+function playBuf(n, vol = 1, dest = null, loop = false) {
+  if (!S.sound || !AC) return null;
+  const b = BUF[n]; if (!b) { loadBuf(n); return null; }
+  const src = AC.createBufferSource(); src.buffer = b; src.loop = loop;
+  const g = AC.createGain(); g.gain.value = vol; src.connect(g); g.connect(dest || master); src.start(); src._g = g; return src;
+}
+function sfx(n, vol = .7) { if (!S.sound || !AC) return; if (BUF[n]) playBuf(n, vol); else loadBuf(n).then(() => playBuf(n, vol)); }
+let bgSrc = null, bgName = null; const bgVol = .26;
+function ramp(param, to, sec) { const t = AC.currentTime; param.cancelScheduledValues(t); param.setValueAtTime(param.value, t); param.linearRampToValueAtTime(to, t + sec); }
 function bgm(n) {
-  if (n === bgName) return;
-  if (bg) fade(bg, 0, 600);
-  bgName = n; bg = null; if (!n) return;
-  const a = aud(n); a.loop = true; a.volume = 0; bg = a;
-  if (S.sound) { a.currentTime = 0; a.play().catch(() => { }); fade(a, bgVol, 900); }
+  if (n === bgName) return; bgName = n;
+  if (!AC) return;
+  if (bgSrc) { const old = bgSrc; ramp(old._g.gain, 0, .6); setTimeout(() => { try { old.stop(); } catch (e) { } }, 700); bgSrc = null; }
+  if (!n) return;
+  loadBuf(n).then(() => { if (bgName !== n || !S.sound) return; bgSrc = playBuf(n, 0, bgGain, true); if (bgSrc) { bgGain.gain.value = bgVol; ramp(bgSrc._g.gain, 1, 1); } });
 }
-let vo = null;
+let voSrc = null, voPlaying = false;
 function voice(n) {
-  if (vo) { vo.pause(); vo = null; }
-  if (!S.sound || !n) return null;
-  vo = aud(n).cloneNode(); vo.volume = 1;
-  if (bg) fade(bg, .08, 250);
-  vo.onended = () => { if (bg && S.sound) fade(bg, bgVol, 500); };
-  vo.play().catch(() => { });
-  return vo;
+  if (voSrc) { try { voSrc.stop(); } catch (e) { } voSrc = null; voPlaying = false; }
+  if (!S.sound || !n || !AC) return;
+  loadBuf(n).then(() => {
+    voSrc = playBuf(n, 1); if (!voSrc) return; voPlaying = true; ramp(bgGain.gain, .07, .25);
+    const me = voSrc; me.onended = () => { if (voSrc === me) { voPlaying = false; ramp(bgGain.gain, bgVol, .5); } };
+  });
 }
-let AC = null;
 function blip() {
-  if (!S.sound) return;
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    const o = AC.createOscillator(), g = AC.createGain();
-    o.type = 'triangle'; o.frequency.value = 520 + Math.random() * 380;
-    g.gain.setValueAtTime(.035, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + .06);
-    o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + .07);
-  } catch (e) { }
+  if (!S.sound || !AC) return;
+  try { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'triangle'; o.frequency.value = 520 + Math.random() * 380;
+    g.gain.setValueAtTime(.035, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + .06); o.connect(g); g.connect(master); o.start(); o.stop(AC.currentTime + .07); } catch (e) { }
 }
 $('#btnSound').onclick = () => {
-  S.sound = !S.sound; save(); hud();
-  if (!S.sound) { if (bg) bg.pause(); if (vo) vo.pause(); }
-  else if (bg) { bg.play().catch(() => { }); fade(bg, bgVol); }
+  S.sound = !S.sound; save(); hud(); ctx();
+  if (!S.sound) { master.gain.value = 0; if (voSrc) { try { voSrc.stop(); } catch (e) { } } }
+  else { master.gain.value = 1; const n = bgName; bgName = null; bgm(n); }
 };
 
 /* ---------------- motion helpers ---------------- */
@@ -119,7 +129,7 @@ function talk(lines, { v = null, img = null, who = 'img/mascot.webp', name = '�
       clearInterval(timer);
       timer = setInterval(() => {
         k++; tx.innerHTML = full.slice(0, k);
-        if (k % 2 === 0 && !(vo && !vo.paused)) blip();
+        if (k % 2 === 0 && !voPlaying) blip();
         if (k >= full.length) { clearInterval(timer); typing = false; more.style.visibility = 'visible'; }
       }, 34);
     }
@@ -290,7 +300,7 @@ async function title() {
       if (!nm) { $('#inName', d).classList.add('shake'); $('#inName', d).focus(); sfx('wrong'); return; }
       if (restart) { const snd = S.sound; Object.assign(S, { leaves: 0, keys: 0, ckpt: 0, notes: {}, choices: [], promise: {}, r1: null, r2: null, done: false, sound: snd }); }
       S.name = nm; S.num = nu; save(); sfx('click');
-      AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume && AC.resume();
+      ctx(); preloadAll();
       res();
     };
     $('#go', d).onclick = () => go(false);
@@ -626,7 +636,7 @@ function promise() {
       ${['when', 'where', 'what'].map((k, i) => `<p class="jua" style="font-size:22px;margin:12px 0 6px">${['언제', '어디서', '무엇을'][i]}</p><div class="grid g5">${sug[k].map(s => `<button class="chip s" data-k="${k}">${s}</button>`).join('')}</div><input class="pin-in" data-k="${k}" style="margin-top:8px;font-family:Jua;font-size:20px;border:3px solid #e6d9b5;border-radius:16px;padding:10px 14px;width:100%" placeholder="직접 써도 돼요" value="${P[k]}">`).join('')}
       <div class="card" style="margin-top:18px;text-align:center;background:#fff"><p class="big jua prev" style="font-size:26px"></p></div></div><div class="next-row">${btn('약속 도장 쾅! ▶', 'coral big')}</div>`);
     const b = $('.next-row .btn', d);
-    const upd = () => { $$('.pin-in', d).forEach(i => P[i.dataset.k] = i.value.trim()); $('.prev', d).innerHTML = `나는 <span class="hl2">${P.when || '언제'}</span> <span class="hl3">${P.where || '어디서'}</span> <span class="hl">${P.what || '무엇을'}</span> 할 거예요!`; b.disabled = !(P.when && P.where && P.what); };
+    const upd = () => { $$('.pin-in', d).forEach(i => P[i.dataset.k] = i.value.trim()); $('.prev', d).innerHTML = `<span class="hl2">${P.when || '언제'}</span> <span class="hl3">${P.where || '어디서'}</span> '<span class="hl">${P.what || '무엇을'}</span>' 꼭 지킬게요!`; b.disabled = !(P.when && P.where && P.what); };
     $$('.chip.s', d).forEach(c => c.onclick = () => { sfx('click', .4); $(`.pin-in[data-k="${c.dataset.k}"]`, d).value = c.textContent; $$(`.chip.s[data-k="${c.dataset.k}"]`, d).forEach(x => x.classList.remove('on')); c.classList.add('on'); upd(); });
     $$('.pin-in', d).forEach(i => i.oninput = upd); upd();
     b.onclick = () => { S.promise = P; save(); sfx('stamp'); confetti(60); addLeaves(20); res(); };
@@ -651,10 +661,10 @@ async function makeCert() {
   g.fillStyle = '#5b4636'; g.font = '34px Jua'; g.fillText(`등급: ${rankOf(S.leaves)}  ·  나뭇잎 ${S.leaves}개`, 150, 440);
   const body = '위 어린이는 바다거북과 산양, 그리고 모든 생물이 함께 사는 생태계를 지키는 방법을 배우고, 나와 국가·사회가 할 수 있는 노력을 조사하였으며, 생태계를 지키는 실천을 약속하였기에 생태계 구조대원으로 임명합니다.';
   g.font = '34px "Gowun Dodum"'; let y = 520, line = '';
-  for (const ch of body) { if (g.measureText(line + ch).width > 1000) { g.fillText(line, 150, y); y += 54; line = ch; } else line += ch; } g.fillText(line, 150, y);
-  const pr = S.promise.when ? `나는 ${S.promise.when} ${S.promise.where} ${S.promise.what} 할 거예요!` : '';
+  for (const w of body.split(' ')) { const tryL = line ? line + ' ' + w : w; if (g.measureText(tryL).width > 1000) { g.fillText(line, 150, y); y += 54; line = w; } else line = tryL; } g.fillText(line, 150, y);
+  const pr = S.promise.when ? `${S.promise.when} ${S.promise.where} '${S.promise.what}' 꼭 지킬게요!` : '';
   g.fillStyle = '#fff3c4'; g.beginPath(); g.roundRect ? g.roundRect(140, y + 50, 1040, 120, 30) : g.rect(140, y + 50, 1040, 120); g.fill();
-  g.fillStyle = '#ff8c7a'; g.font = '30px Jua'; g.fillText('나의 약속', 175, y + 98); g.fillStyle = '#5b4636'; g.font = '34px Jua'; g.fillText(pr.length > 34 ? pr.slice(0, 34) + '…' : pr, 175, y + 145);
+  g.fillStyle = '#ff8c7a'; g.font = '30px Jua'; g.fillText('나의 약속', 175, y + 98); g.fillStyle = '#5b4636'; g.font = '34px Jua'; g.fillText(pr.length > 38 ? pr.slice(0, 38) + '…' : pr, 175, y + 145);
   const dt = new Date(); g.font = '30px Jua'; g.fillStyle = '#7d6a58'; g.fillText(`${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일   4학년 소망반 생태계 구조대`, 150, 1000);
   if (masc) g.drawImage(masc, 1200, 360, 300, 300 * masc.height / masc.width);
   // stamp
@@ -751,6 +761,7 @@ async function ocean3D(host) {
 (async function main() {
   const qs = new URLSearchParams(location.search);
   if (qs.has('reset')) { localStorage.removeItem(KEY); location.replace(location.pathname); return; }
+  addEventListener('pointerdown', () => { ctx(); }, { once: true });
   const dev = qs.get('scene'); if (dev) { hud(); const F = { bridge, fence, straw, actions, sortGame, hope, matchGame, vault, oxRound, promise, certificate, arcade: () => arcade({ secs: 15 }) }; await F[dev](); return; }
   await title(); hud();
   const jump = qs.get('jump'); if (jump) S.ckpt = +jump;
