@@ -74,6 +74,7 @@ export function bridgeWalk(host, { onInv, onStage, onHit, onDone, sfx = () => { 
   const carry = new THREE.Group(); me.userData.pack.add(carry);
   const refresh = () => { carry.clear(); let i = 0; ['wood', 'stone', 'soil'].forEach(k => { for (let n = 0; n < Math.min(3, Math.ceil(inv[k] / 2)); n++) { B(carry, 0, .32 + i * .2, -.02, .34, .18, .2, k === 'wood' ? P.wood : k === 'stone' ? P.stone : P.grass); i++; } }); };
   let hit = 0, busy = 0, doneT = -1, crossed = 0;
+  window.__dbg = { me, res, pads, kind: 'bridge' };
   onInv && onInv(inv, need);
   run(host, ctx, (dt, t) => {
     cars.forEach(c => { c.position.x += c.userData.d * c.userData.v * dt; if (c.position.x > 17) c.position.x = -17; if (c.position.x < -17) c.position.x = 17; c.position.y = Math.abs(Math.sin(t * 14 + c.position.x)) * .03; });
@@ -133,6 +134,7 @@ export function beachWalk(host, { onPick, onTurtleFree, onAllDone, sfx = () => {
   const me = avatar(); me.position.set(0, .55, 6); sc.add(me); const ctl = controls(host);
   const bag = new THREE.Group(); me.userData.pack.add(bag);
   let picked = 0, freed = false, cut = 0, lastS = 0, fin = false; const total = items.length;
+  window.__dbg = { me, items, tur, kind: 'beach' };
   run(host, ctx, (dt, t) => {
     sea.userData.tick(t);
     const inp = ctl.read();
@@ -165,6 +167,7 @@ export function fenceWalk(host, { onCut, onFree, sfx = () => { } } = {}) {
   const gor = animal('goral'); gor.position.set(-3.5, .5, 0); sc.add(gor);
   const me = avatar(); me.position.set(6, 0, 3); sc.add(me); const ctl = controls(host); const bar = cutBar(host, '울타리 여는 중…');
   let cut = 0, walk = -1, lastS = 0;
+  window.__dbg = { me, panels, kind: 'fence' };
   run(host, ctx, (dt, t) => {
     flakes.forEach((f, i) => { f.position.y -= dt * (.6 + (i % 3) * .2); if (f.position.y < 0) f.position.y = 10; });
     const inp = ctl.read(); me.position.x = Math.max(.6, Math.min(11, me.position.x + inp.x * 4.2 * dt)); me.position.z = Math.max(-6.5, Math.min(6.5, me.position.z + inp.z * 4.2 * dt)); if (inp.m) me.rotation.y = Math.atan2(inp.x, inp.z); animAv(me, t, inp.m);
@@ -209,6 +212,7 @@ export function zoneStage(host, { zones = [], onEnter, sfx = () => { }, theme = 
     me.position.copy(home); hold = 0; cur = -1; leftPad = true; locked = false;
   }
   set(zones);
+  window.__dbg = { me, pads, kind: 'zone' };
   const v = new THREE.Vector3();
   run(host, ctx, (dt, t) => {
     const inp = ctl.read();

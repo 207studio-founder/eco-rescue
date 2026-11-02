@@ -84,34 +84,6 @@ function matchGame() {
   });
 }
 
-/* ---- 국제 협약: 내 생각 발판 ---- */
-function treaty() {
-  return new Promise(async res => {
-    const d = scene(`<div class="card" style="padding:16px 18px"><div class="title-tag">바다는 모두 이어져 있어요</div>
-      <p class="big" style="margin:4px 0">다른 나라의 쓰레기가 우리 바다로 오기도 해요. 그래서 나라들이 함께 <span class="hl2">약속(국제 협약)</span>을 만들고 있어요.</p>
-      <div class="timeline"><div class="tl"><h4>2024년 11월</h4><p>부산 회의 – 합의 못 함</p></div><div class="tl"><h4>2025년 8월</h4><p>제네바 – 또 합의 못 함</p></div><div class="tl"><h4>2026년</h4><p>새 의장, 의견 다시 모으기</p></div><div class="tl"><h4>2027년 3월</h4><p>다음 큰 회의 예정</p></div></div>
-      <h2 class="q" style="margin:12px 0 6px">내 생각은? 나라끼리 약속하기가 왜 어려울까요?</h2>${stageHTML('min(40vh,360px)')}<div class="fb"></div><div class="src">출처: 데일리환경(2026.9.22), 기후에너지환경부(2026.4.28)</div></div>`);
-    const W = await wk(); if (!W) return res();
-    W.zoneStage($('.zst', d), { sfx, zones: [{ html: '나라마다 하는 일(산업)이 달라서' }, { html: '나라마다 돈과 기술이 달라서' }, { html: '모두의 생각을 모으기 어려워서' }], onEnter: (i, a) => {
-      a.lock(true); a.flash(i, true); sfx('correct', .5); addLeaves(10);
-      $('.fb', d).innerHTML = `<div class="card paper" style="margin-top:12px"><p class="big">좋은 생각이에요! 정답이 하나인 문제는 아니에요. 실제로 이런 까닭들이 모두 얽혀 있어요. 그래도 나라들은 계속 이야기하고 있고, 우리나라도 2026년 <b>플라스틱 줄이기 계획</b>을 세웠어요.</p></div>`; nextBtn(d).then(res);
-    } });
-  });
-}
-
-/* ---- 다시 돌아온 친구들: 발판을 밟으면 카드가 열려요 ---- */
-function hope() {
-  const cards = [['반달가슴곰', 'img/a_bear.webp', '2000년대 초 지리산에 약 5마리', '2025년 말 약 96마리!'], ['황새', 'img/a_stork.webp', '1970년대 우리나라에서 사라짐', '2026년 10월 야생에 약 300마리!'], ['따오기', 'img/a_ibis.webp', '2019년 처음 자연으로', '440마리 방사, 야생 3세대 탄생!']];
-  return new Promise(async res => {
-    const d = scene(`<div class="card" style="padding:16px 18px"><div class="title-tag forest">다시 돌아온 친구들</div><h2 class="q" style="margin:4px 0 8px">사라질 뻔한 동물들이 돌아왔어요! 발판을 밟아 이야기를 열어 봐요.</h2>${stageHTML()}<div class="fb"></div><div class="src">출처: 뉴스펭귄(2026.8.15), 소년중앙(2026.10.18), 경남도민일보(2026.5.7)</div></div>`);
-    const W = await wk(); if (!W) return res(); const seen = new Set();
-    W.zoneStage($('.zst', d), { sfx, zones: cards.map(c => ({ html: `<img src="${c[1]}" style="object-fit:contain" alt="">${c[0]}` })), onEnter: (i, a) => {
-      const c = cards[i]; a.label(i, `<img src="${c[1]}" style="object-fit:contain" alt=""><b>${c[0]}</b><br><small>${c[2]}</small><br><span style="color:#ff8c7a">→ ${c[3]}</span>`); a.flash(i, true); sfx('key', .5); seen.add(i); setTimeout(() => a.home(), 900);
-      if (seen.size === 3) { a.lock(true); confetti(100, 'leaf'); addLeaves(15); $('.fb', d).innerHTML = `<p class="big" style="text-align:center;margin-top:10px">사람이 힘을 모으면 <span class="hl">사라졌던 생물도 다시 돌아올 수 있어요!</span></p>`; nextBtn(d).then(res); }
-    } });
-  });
-}
-
 /* ---- 누구의 노력일까? 두 바구니 중 걸어가기 ---- */
 function sortGame() {
   const items = shuffle([['물 아껴 쓰기', 0], ['냉난방 온도 지켜 에너지 아끼기', 0], ['음식 남기지 않기', 0], ['생태통로 만들기', 1], ['걷기·자전거·대중교통 이용', 0], ['생태계 보호 구역 정하기', 1], ['친환경 비누·세제 쓰기', 0], ['물고기 잡지 않는 기간 정하기', 1], ['나라끼리 오염 줄이기 약속', 1], ['일회용품 줄이고 분리배출', 0]]);
